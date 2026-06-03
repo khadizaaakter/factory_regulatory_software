@@ -60,7 +60,7 @@ body {
 }
 
 /* input{
-  border-color: #292e66 !important;
+  border-color: #006a4e !important;
 } */
 
 .ant-menu.ant-menu-root {
@@ -70,16 +70,16 @@ body {
 }
 
 .ant-layout-sider.ant-layout-sider-dark {
-  color: #2d2d61 !important;
+  color: #002f23 !important;
 }
 
 /* body {
-  background: #292e66 !important;
+  background: #006a4e !important;
   background-size: cover !important;
 } */
 
 .ant-layout-sider-trigger {
-  background: #292e66 !important;
+  background: #002f23 !important;
   color: #fff !important;
 }
 
@@ -93,10 +93,10 @@ body {
 }
 
 aside .ant-menu-item:hover {
-  background-color: #024f97 !important;
+  background-color: #00543e !important;
 }
 .ant-btn-primary {
-  background-color: #4040a4;
+  background-color: #002f23;
 }
 .edit-btn {
   background-color: #bfdbfe !important;

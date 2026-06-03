@@ -10,8 +10,8 @@ import Role from "./views/user/Role.vue";
 import EditRole from "./views/user/EditRole.vue";
 import EditUser from "./views/user/EditUser.vue";
 import UpdatePermission from "./views/user/UpdatePermission.vue";
-import ProductCategory from "./views/Product Category/category_list.vue";
-import Product_list from "./views/product/product_list.vue";
+// import ProductCategory from "./views/Product Category/category_list.vue";
+// import Product_list from "./views/product/product_list.vue";
 import Dashboard from "./views/dashboard/dashboard.vue";
 import Report from "./views/report/report.vue";
 
@@ -37,16 +37,16 @@ const routes = [
     component: Permission,
   },
   // product category
-  {
-    path: "/product-category",
-    name: "product-category",
-    component: ProductCategory,
-  },
-  {
-    path: "/product-list",
-    name: "product-list",
-    component: Product_list,
-  },
+  // {
+  //   path: "/product-category",
+  //   name: "product-category",
+  //   component: ProductCategory,
+  // },
+  // {
+  //   path: "/product-list",
+  //   name: "product-list",
+  //   component: Product_list,
+  // },
   {
     path: "/dashboard",
     name: "dashboard",

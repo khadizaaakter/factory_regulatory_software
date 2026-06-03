@@ -4,13 +4,13 @@
     collapsible
     class="overflow-y-auto whitespace-nowrap bg"
   >
-    <div
+    <!-- <div
       class="text-uppercase advance text-white text-xl py-4 text-center px-2 logo-text ps-4"
     >
       <router-link :to="{ name: 'product-category' }"
-        >Genetics Sales <span class="font-bold">Monitoring</span>
+        >Factory Regulatory <span class="font-bold">Software</span>
       </router-link>
-    </div>
+    </div> -->
     <div
       class="text-uppercase pms text-white text-2xl py-4 text-center px-2 logo-text ps-4"
     >
@@ -51,8 +51,8 @@ watch(
 }
 
 .ant-menu-item-selected {
-  background: #152a5a !important;
-  border-left: 5px solid #50b8e4 !important;
+  background: #00503c !important;
+  border-left: 5px solid #000705 !important;
 }
 
 .ant-menu-sub {
@@ -99,6 +99,6 @@ watch(
 }
 
 .bg {
-  background-color: #292e66 !important;
+  background-color: #002f23 !important;
 }
 </style>

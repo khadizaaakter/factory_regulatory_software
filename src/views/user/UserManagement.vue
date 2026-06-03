@@ -7,7 +7,7 @@
         </div>
         <a-button
           type="primary"
-          class="flex items-center gap-1 bg-[#2d2d61]"
+          class="flex items-center gap-1 bg-[#002f23]"
           @click="openAddModal"
         >
           <PlusOutlined /> Add User
@@ -268,7 +268,7 @@
               type="primary"
               html-type="submit"
               :loading="isSubmitting"
-              class="bg-[#2d2d61]"
+              class="bg-[#002f23]"
             >
               Save
             </a-button>

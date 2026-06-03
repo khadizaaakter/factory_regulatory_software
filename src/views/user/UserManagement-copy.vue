@@ -36,7 +36,7 @@
       <!-- logo area -->
       <Breadcrumb class="ms-32" :items="breadcrumbs" />
       <div
-        class="border relative w-full py-3 bg-gradient-to-r from-[#4040A4] to-[#474775] px-12"
+        class="border relative w-full py-3 bg-gradient-to-r from-[#002f23] to-[#00543e] px-12"
       >
         <div
           class="absolute size-16 -bottom-4 ring-8 ring-white left-12 rounded-full"

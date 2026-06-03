@@ -20,7 +20,7 @@
       </a-menu-item>
 
       <!-- Settings submenu -->
-      <a-sub-menu v-if="hasPermission('Product')" key="settings">
+      <!-- <a-sub-menu v-if="hasPermission('Product')" key="settings">
         <template #title>
           <span class="flex items-center">
             <ShoppingOutlined />
@@ -37,7 +37,7 @@
             <span>Product List</span>
           </router-link>
         </a-menu-item>
-      </a-sub-menu>
+      </a-sub-menu> -->
     </a-menu-item-group>
 
     <!-- report -->
@@ -54,10 +54,7 @@
         <span class="menu-group-title">User Management</span>
       </template>
 
-      <a-menu-item
-        v-if="hasPermission('User Manager')"
-        key="user-management"
-      >
+      <a-menu-item v-if="hasPermission('User Manager')" key="user-management">
         <router-link :to="{ name: 'user-management' }">
           <TeamOutlined />
           <span>User Manager</span>
@@ -70,10 +67,7 @@
         </router-link>
       </a-menu-item>
 
-      <a-menu-item
-        v-if="hasPermission('Permissions')"
-        key="user-permission"
-      >
+      <a-menu-item v-if="hasPermission('Permissions')" key="user-permission">
         <router-link :to="{ name: 'user-permission' }">
           <SafetyOutlined />
           <span>Permissions</span>
@@ -114,8 +108,8 @@ const openKeys = ref([]);
 
 // Map each child route name to its parent submenu key
 const routeToSubmenu = {
-  "product-category": "settings",
-  "product-list": "settings",
+  // "product-category": "settings",
+  // "product-list": "settings",
 };
 
 const user_permissions = ref(
@@ -130,11 +124,9 @@ const hasAnyPermission = (permissions) => {
   return permissions.some((p) => hasPermission(p));
 };
 
-const showMainMenu = () =>
-  hasAnyPermission(["Dashboard", "Product"]);
+const showMainMenu = () => hasAnyPermission(["Dashboard", "Product"]);
 
-const showUserMenu = () =>
-  hasAnyPermission(["User Manager", "Role", "Permissions"]);
+const showUserMenu = () => hasAnyPermission(["User Manager", "Role", "Permissions"]);
 
 const handleLogout = (router) => {
   Cookies.remove("token");
@@ -170,8 +162,8 @@ watch(
 }
 
 .ant-menu-item-selected {
-  background: #355bb4 !important;
-  border-left: 5px solid #50b8e4 !important;
+  background: #00503c !important;
+  border-left: 5px solid #00503c !important;
 }
 
 .ant-menu-sub {

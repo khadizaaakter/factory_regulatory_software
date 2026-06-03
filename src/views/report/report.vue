@@ -48,7 +48,7 @@
         <div class="flex items-end gap-2">
           <a-button
             type="primary"
-            class="bg-[#2d2d61]"
+            class="bg-[#002f23]"
             :loading="loading"
             @click="loadReport"
           >
