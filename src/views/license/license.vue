@@ -110,7 +110,10 @@
                   <a-button
                     size="small"
                     class="flex items-center gap-1 bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100"
-                    title="Renew"
+                    :disabled="!canRenew(license)"
+                    :title="
+                      canRenew(license) ? 'Renew' : 'Available from the expiry date'
+                    "
                     @click="renewLicense(license)"
                   >
                     <ReloadOutlined /> Renew
@@ -217,7 +220,6 @@ const getLicenses = async () => {
   isLoading.value = true;
   try {
     const res = await axios.get(`${apiBase}/licenses?per_page=100`, getTokenConfig());
-    // The licenses endpoint returns a paginator under data, so the rows live at data.data.
     const payload = res?.data?.data;
     licenseList.value = Array.isArray(payload?.data)
       ? payload.data
@@ -241,7 +243,20 @@ const viewLicense = (license) => {
   router.push({ name: "license-detail", params: { id: license?.LicenseID } });
 };
 
+// Renew is allowed only from the expiry date onward (today >= ExpiryDate).
+const canRenew = (license) => {
+  const expiry = license?.ExpiryDate;
+  if (!expiry) return false;
+  const exp = new Date(expiry);
+  if (Number.isNaN(exp.getTime())) return false;
+  const today = new Date();
+  exp.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+  return today >= exp;
+};
+
 const renewLicense = (license) => {
+  if (!canRenew(license)) return;
   router.push({ name: "license-renew", params: { id: license?.LicenseID } });
 };
 
