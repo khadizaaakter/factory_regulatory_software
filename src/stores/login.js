@@ -13,42 +13,40 @@ export const useLoginStore = defineStore("loginStore", {
     async handleLogin(data, router) {
       this.isLoading = true;
       try {
-        console.log("Logging in with:", data);
-        const res = await axios.post(`${apiBase}/login`, data);
-        this.isLoading = false;
+        const res = await axios.post(
+          `${apiBase}/auth/login`,
+          { email: data.email, password: data.password },
+          { headers: { Accept: "application/json" } }
+        );
 
         const payload = res?.data;
-        const isSuccess =
-          payload?.status === 1 ||
-          payload?.status === "success" ||
-          !!payload?.token;
+        const token = payload?.data?.token;
+        const user = payload?.data?.user;
 
-        if (isSuccess && payload?.token) {
+        if (payload?.success && token && user) {
+          const roles = Array.isArray(user.roles) ? user.roles : [];
+          const primaryRole = roles[0] ?? "";
+
           const blockedRoles = ["customer", "dealer"];
-          if (blockedRoles.includes(payload?.role?.toLowerCase())) {
+          if (
+            roles.some((r) => blockedRoles.includes(String(r).toLowerCase()))
+          ) {
             showNotification(
               "error",
-              `${payload?.role || "User"} is not allowed to login.`
+              `${primaryRole || "User"} is not allowed to login.`
             );
             return;
           }
 
-          Cookies.set("token", payload.token, { expires: null });
-          localStorage.setItem("name", payload?.name ?? "");
-          localStorage.setItem("email", payload?.email ?? "");
-          localStorage.setItem("role", payload?.role ?? "");
-          localStorage.setItem(
-            "staff_id",
-            payload?.staff_id ?? payload?.dealer_code ?? ""
-          );
-
-          const permissions = await this.fetchRolePermissions(
-            payload?.role,
-            payload?.token
-          );
+          Cookies.set("token", token, { expires: null });
+          this.userInfo = user;
+          localStorage.setItem("name", user?.name ?? "");
+          localStorage.setItem("email", user?.email ?? "");
+          localStorage.setItem("role", primaryRole);
+          localStorage.setItem("staff_id", String(user?.id ?? ""));
           localStorage.setItem(
             "user_permissions",
-            JSON.stringify(permissions)
+            JSON.stringify(this.mapPermissions(user?.permissions))
           );
 
           showNotification(
@@ -64,30 +62,32 @@ export const useLoginStore = defineStore("loginStore", {
         }
       } catch (error) {
         this.userInfo = null;
-        this.isLoading = false;
         Cookies.remove("token");
         const errorMessage =
           error?.response?.data?.message || "An unexpected error occurred.";
-        console.error("Login error:", errorMessage); // Log the error message
+        console.error("Login error:", errorMessage);
         showNotification("error", errorMessage);
+      } finally {
+        this.isLoading = false;
       }
     },
 
-    async fetchRolePermissions(roleName, token) {
-      if (!roleName) return [];
-      try {
-        const res = await axios.get(`${apiBase}/roles`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const roles = res?.data?.role ?? [];
-        const matched = roles.find(
-          (r) => r?.name?.toLowerCase() === roleName?.toLowerCase()
-        );
-        return matched?.permissions?.map((p) => p?.name) ?? [];
-      } catch (error) {
-        console.error("Failed to fetch role permissions:", error);
-        return [];
-      }
+    // Map the backend's dotted permission strings (e.g. "users.view")
+    // to the labels the sidebar/menus check against.
+    mapPermissions(perms = []) {
+      const list = Array.isArray(perms) ? perms : [];
+      const has = (prefix) => list.some((p) => String(p).startsWith(prefix));
+
+      const labels = new Set(["Dashboard"]);
+      if (has("businesses.")) labels.add("Business");
+      if (has("license_categories.")) labels.add("License Category");
+      if (has("license_master.")) labels.add("License");
+      if (has("users.")) labels.add("User Manager");
+      if (has("roles.")) labels.add("Role");
+      if (has("permissions.")) labels.add("Permissions");
+      if (has("posts.")) labels.add("Report");
+
+      return [...labels];
     },
 
     // logout(router) {},

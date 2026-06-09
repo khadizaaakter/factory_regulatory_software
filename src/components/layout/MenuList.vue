@@ -1,116 +1,103 @@
 <template>
   <a-menu
-    class=""
     v-model:selectedKeys="selectedKeys"
     v-model:openKeys="openKeys"
     theme="dark"
     mode="inline"
+    class="sidebar-nav"
   >
-    <!-- ================= BASIC ================= -->
-    <a-menu-item-group v-if="showMainMenu()">
-      <template #title>
-        <span class="menu-group-title">Main Menu</span>
-      </template>
-      <!-- dashboard -->
-      <a-menu-item v-if="hasPermission('Dashboard')" key="dashboard">
-        <router-link :to="{ name: 'dashboard' }">
-          <StockOutlined />
-          <span>Dashboard</span>
-        </router-link>
-      </a-menu-item>
-
-      <!-- Settings submenu -->
-      <!-- <a-sub-menu v-if="hasPermission('Product')" key="settings">
-        <template #title>
-          <span class="flex items-center">
-            <ShoppingOutlined />
-            <span class="ml-2">Product</span>
-          </span>
-        </template>
-        <a-menu-item key="product-category">
-          <router-link :to="{ name: 'product-category' }">
-            <span>Product Category</span>
-          </router-link>
-        </a-menu-item>
-        <a-menu-item key="product-list">
-          <router-link :to="{ name: 'product-list' }">
-            <span>Product List</span>
-          </router-link>
-        </a-menu-item>
-      </a-sub-menu> -->
-    </a-menu-item-group>
-
-    <!-- report -->
-    <a-menu-item v-if="hasPermission('Report')" key="report">
-      <router-link :to="{ name: 'report' }">
-        <BarChartOutlined />
-        <span>Report</span>
-      </router-link>
+    <!-- dashboard -->
+    <a-menu-item v-if="hasPermission('Dashboard')" key="dashboard">
+      <template #icon><StockOutlined /></template>
+      <router-link :to="{ name: 'dashboard' }">Dashboard</router-link>
     </a-menu-item>
 
-    <!-- user -->
-    <a-menu-item-group v-if="showUserMenu()">
-      <template #title>
-        <span class="menu-group-title">User Management</span>
+    <!-- license -->
+    <a-menu-item v-if="hasPermission('License')" key="license">
+      <template #icon><FileProtectOutlined /></template>
+      <router-link :to="{ name: 'license' }">License</router-link>
+    </a-menu-item>
+
+    <!-- report -->
+    <!-- <a-menu-item v-if="hasPermission('Report')" key="report">
+      <template #icon><BarChartOutlined /></template>
+      <router-link :to="{ name: 'report' }">Report</router-link>
+    </a-menu-item> -->
+
+    <!-- settings submenu -->
+    <a-sub-menu v-if="showSettingsMenu()" key="settings-group">
+      <template #icon>
+        <SettingOutlined />
       </template>
+      <template #title>Settings</template>
+
+      <a-menu-item v-if="hasPermission('License Category')" key="license-category">
+        <router-link :to="{ name: 'license-category' }">
+          <span>License Category</span>
+        </router-link>
+      </a-menu-item>
+      <a-menu-item v-if="hasPermission('Business')" key="business">
+        <router-link :to="{ name: 'business' }">
+          <span>Business</span>
+        </router-link>
+      </a-menu-item>
+    </a-sub-menu>
+
+    <!-- user management submenu -->
+    <a-sub-menu v-if="showUserMenu()" key="user-management-group">
+      <template #icon>
+        <TeamOutlined />
+      </template>
+      <template #title>User Management</template>
 
       <a-menu-item v-if="hasPermission('User Manager')" key="user-management">
         <router-link :to="{ name: 'user-management' }">
-          <TeamOutlined />
           <span>User Manager</span>
         </router-link>
       </a-menu-item>
       <a-menu-item v-if="hasPermission('Role')" key="role">
         <router-link :to="{ name: 'role' }">
-          <IdcardOutlined />
           <span>Role</span>
         </router-link>
       </a-menu-item>
-
       <a-menu-item v-if="hasPermission('Permissions')" key="user-permission">
         <router-link :to="{ name: 'user-permission' }">
-          <SafetyOutlined />
           <span>Permissions</span>
         </router-link>
       </a-menu-item>
-    </a-menu-item-group>
-
-    <a-menu-item @click="handleLogout($router)" key="logout">
-      <logout-outlined />
-      <span>Logout</span>
-    </a-menu-item>
+    </a-sub-menu>
   </a-menu>
 </template>
 
 <script setup>
 import { useRoute } from "vue-router";
-import Cookies from "js-cookie";
 import {
-  ProfileOutlined,
-  LogoutOutlined,
-  UnorderedListOutlined,
-  SettingOutlined,
-  DollarOutlined,
   BarChartOutlined,
-  SafetyOutlined,
-  DashboardOutlined,
-  ShoppingOutlined,
   TeamOutlined,
-  IdcardOutlined,
   StockOutlined,
+  SettingOutlined,
+  FileProtectOutlined,
 } from "@ant-design/icons-vue";
 import { ref, watch } from "vue";
 
 const route = useRoute();
 
-const selectedKeys = ref([route?.name]);
-const openKeys = ref([]);
-
 // Map each child route name to its parent submenu key
 const routeToSubmenu = {
-  // "product-category": "settings",
-  // "product-list": "settings",
+  "license-category": "settings-group",
+  business: "settings-group",
+  "user-management": "user-management-group",
+  role: "user-management-group",
+  "user-permission": "user-management-group",
 };
+
+const selectedKeys = ref([route?.name]);
+
+// Each page mounts its own layout, so MenuList remounts on every navigation.
+// Initialize openKeys from the current route's parent so the submenu stays open
+// after navigating to one of its children (instead of collapsing on each click).
+const initialParent = routeToSubmenu[route?.name];
+const openKeys = ref(initialParent ? [initialParent] : []);
 
 const user_permissions = ref(
   JSON.parse(localStorage.getItem("user_permissions") || "[]")
@@ -124,25 +111,16 @@ const hasAnyPermission = (permissions) => {
   return permissions.some((p) => hasPermission(p));
 };
 
-const showMainMenu = () => hasAnyPermission(["Dashboard", "Product"]);
+const showSettingsMenu = () => hasAnyPermission(["License Category", "Business"]);
 
 const showUserMenu = () => hasAnyPermission(["User Manager", "Role", "Permissions"]);
-
-const handleLogout = (router) => {
-  Cookies.remove("token");
-  localStorage.removeItem("staff_id");
-  localStorage.removeItem("name");
-  localStorage.removeItem("email");
-  localStorage.removeItem("role");
-  localStorage.removeItem("user_permissions");
-  router.push({ name: "login" });
-};
 
 watch(
   () => route?.name,
   (name) => {
     selectedKeys.value = [name];
 
+    // Keep the child's parent submenu open after navigating to it.
     const parent = routeToSubmenu[name];
     if (parent && !openKeys.value.includes(parent)) {
       openKeys.value = [...openKeys.value, parent];
@@ -153,44 +131,80 @@ watch(
 </script>
 
 <style>
-.ant-menu {
-  padding: 0 !important;
+/* ===================== Nav base ===================== */
+.sidebar-nav.ant-menu {
+  background: transparent !important;
+  border-inline-end: none !important;
+  padding: 0 10px !important;
 }
 
-.ant-menu-item {
-  border-radius: 0 !important;
+/* ---- top-level items & submenu titles ---- */
+.sidebar-nav .ant-menu-item,
+.sidebar-nav .ant-menu-submenu-title {
+  height: 44px !important;
+  line-height: 44px !important;
+  margin: 4px 0 !important;
+  border-radius: 10px !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+  font-weight: 500;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
-.ant-menu-item-selected {
-  background: #00503c !important;
-  border-left: 5px solid #00503c !important;
+.sidebar-nav .ant-menu-item a {
+  color: inherit !important;
+  display: flex;
+  align-items: center;
 }
 
-.ant-menu-sub {
+/* icon + label spacing */
+.sidebar-nav .ant-menu-title-content {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sidebar-nav .anticon {
+  font-size: 18px;
+}
+
+/* ---- hover ---- */
+.sidebar-nav .ant-menu-item:hover,
+.sidebar-nav .ant-menu-submenu-title:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+}
+
+/* ---- selected (pill highlight) ---- */
+.sidebar-nav .ant-menu-item-selected {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+.sidebar-nav .ant-menu-item-selected a {
+  color: #ffffff !important;
+}
+
+/* keep an open submenu parent neutral, not blue */
+.sidebar-nav .ant-menu-submenu-selected > .ant-menu-submenu-title {
+  color: #ffffff !important;
+}
+
+/* ===================== Submenu (children) ===================== */
+.sidebar-nav .ant-menu-sub.ant-menu-inline {
   background: transparent !important;
 }
 
-/* Section group title (BASIC, REPORTS, MIS SETTINGS) */
-.ant-menu-item-group-title {
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  letter-spacing: 1px;
-  font-size: 13px !important;
-  padding-top: 16px !important;
+.sidebar-nav .ant-menu-sub .ant-menu-item {
+  height: 38px !important;
+  line-height: 38px !important;
+  padding-left: 44px !important;
 }
 
-.menu-group-title {
-  color: #ffffff;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-/* Bullet point for submenu items, like in the screenshot */
-.ant-menu-sub .ant-menu-item .ant-menu-title-content::before {
+/* bullet for submenu items */
+.sidebar-nav .ant-menu-sub .ant-menu-item .ant-menu-title-content::before {
   content: "•";
-  color: #ffffff;
+  color: rgba(255, 255, 255, 0.5);
   margin-right: 10px;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
 }
 </style>

@@ -30,10 +30,10 @@
             class="login-form"
             layout="vertical"
           >
-            <label class="field-label">User ID</label>
+            <label class="field-label">Email</label>
             <a-input
-              v-model:value="data.user_id"
-              placeholder="Enter your User ID"
+              v-model:value="data.email"
+              placeholder="Enter your email"
               class="modern-input"
               size="large"
             />
@@ -72,7 +72,7 @@ const { handleLogin } = loginStore;
 const { isLoading } = storeToRefs(loginStore);
 
 const data = reactive({
-  user_id: "",
+  email: "",
   password: "",
 });
 </script>

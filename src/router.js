@@ -7,13 +7,17 @@ import Login from "./views/Login.vue";
 import UserManagement from "./views/user/UserManagement.vue";
 import Permission from "./views/user/Permission.vue";
 import Role from "./views/user/Role.vue";
-import EditRole from "./views/user/EditRole.vue";
-import EditUser from "./views/user/EditUser.vue";
-import UpdatePermission from "./views/user/UpdatePermission.vue";
-// import ProductCategory from "./views/Product Category/category_list.vue";
-// import Product_list from "./views/product/product_list.vue";
+
 import Dashboard from "./views/dashboard/dashboard.vue";
 import Report from "./views/report/report.vue";
+import Business from "./views/business/business.vue";
+import LicenseCategory from "./views/licenseCategory/license_category.vue";
+import License from "./views/license/license.vue";
+import LicenseCreate from "./views/license/license_create.vue";
+import LicenseEdit from "./views/license/license_edit.vue";
+import LicenseHistory from "./views/license/license_history.vue";
+import LicenseRenewalDetail from "./views/license/license_renewal_detail.vue";
+import LicenseDetail from "./views/license/license_detail.vue";
 
 const routes = [
   {
@@ -36,17 +40,6 @@ const routes = [
     name: "user-permission",
     component: Permission,
   },
-  // product category
-  // {
-  //   path: "/product-category",
-  //   name: "product-category",
-  //   component: ProductCategory,
-  // },
-  // {
-  //   path: "/product-list",
-  //   name: "product-list",
-  //   component: Product_list,
-  // },
   {
     path: "/dashboard",
     name: "dashboard",
@@ -58,28 +51,58 @@ const routes = [
     component: Report,
   },
   {
-    path: "/update-user-permission/:id",
-    name: "update-user-permission",
-    component: UpdatePermission,
-  },
-  {
     path: "/user-role",
     name: "user-role",
     component: Role,
   },
-
+  // business
   {
-    path: "/user-edit/:id",
-    name: "user-edit",
-    component: EditUser,
+    path: "/business",
+    name: "business",
+    component: Business,
   },
-
+  // license_category
   {
-    path: "/user-role-edit/:id",
-    name: "user-role-edit",
-    component: EditRole,
+    path: "/license-category",
+    name: "license-category",
+    component: LicenseCategory,
   },
-
+  // license
+  {
+    path: "/license",
+    name: "license",
+    component: License,
+  },
+  // license create (must come before /license/:id)
+  {
+    path: "/license/create",
+    name: "license-create",
+    component: LicenseCreate,
+  },
+  // license edit
+  {
+    path: "/license/:id/edit",
+    name: "license-edit",
+    component: LicenseEdit,
+  },
+  // license renewal history
+  {
+    path: "/license/:id/history",
+    name: "license-history",
+    component: LicenseHistory,
+  },
+  // renewal detail
+  {
+    path: "/renewal/:id",
+    name: "renewal-detail",
+    component: LicenseRenewalDetail,
+  },
+  // license detail
+  {
+    path: "/license/:id",
+    name: "license-detail",
+    component: LicenseDetail,
+  },
   {
     path: "/:catchAll(.*)",
     redirect: "/",

@@ -1,1 +1,1 @@
-export const apiBase = "https://webapps.acibd.com/api/gsm/api";
+export const apiBase = "https://wa.acibd.com/api/factory_regulatory_software_backend/api";

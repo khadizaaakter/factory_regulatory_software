@@ -6,8 +6,6 @@ export function formatNumber(number) {
 }
 const PERMISSION_FREE_ROUTES = [
   "user-management",
-  // "product-category",
-  // "product-list",
 ];
 
 export function hasPermission(route) {

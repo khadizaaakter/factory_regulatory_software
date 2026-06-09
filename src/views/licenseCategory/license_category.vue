@@ -3,7 +3,7 @@
     <div class="-m-5 p-6 bg-[#f4f6fb] min-h-full">
       <!-- Header -->
       <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Role Management</h1>
+        <h1 class="text-2xl font-bold text-gray-800">License Categories</h1>
       </div>
 
       <!-- Main card -->
@@ -12,7 +12,7 @@
         <div class="flex flex-wrap items-center gap-3 p-4 border-b border-gray-100">
           <a-input
             v-model:value="searchQuery"
-            placeholder="Search roles..."
+            placeholder="Search license categories..."
             class="flex-1 min-w-[200px] rounded-lg"
             allow-clear
           >
@@ -26,7 +26,7 @@
             class="flex items-center gap-1 bg-[#002f23] h-9 px-4"
             @click="openAddModal"
           >
-            <PlusOutlined /> Add Role
+            <PlusOutlined /> Add License Category
           </a-button>
         </div>
 
@@ -35,8 +35,8 @@
           <table class="min-w-full text-sm">
             <thead>
               <tr class="text-gray-500 font-semibold border-b border-gray-100 text-left">
-                <th class="py-3 px-5">Role</th>
-                <th class="py-3 px-5">Permissions</th>
+                <th class="py-3 px-5">License Category Name</th>
+                <th class="py-3 px-5">Code</th>
                 <th class="py-3 px-5 text-right">Actions</th>
               </tr>
             </thead>
@@ -47,45 +47,31 @@
                 </td>
               </tr>
 
-              <tr v-else-if="filteredData().length === 0">
-                <td colspan="4" class="py-10 text-center">
-                  <a-empty description="No roles found" />
-                </td>
-              </tr>
-
               <tr
-                v-for="(role, index) in paginatedData()"
-                :key="role.id ?? index"
+                v-for="(licenseCategory, index) in paginatedData()"
+                :key="licenseCategory.id ?? index"
                 class="border-b border-gray-50 hover:bg-gray-50 transition-colors"
               >
-                <!-- Role -->
+                <!-- License Category Name -->
                 <td class="py-3 px-5">
                   <div class="flex items-center gap-3">
                     <div
                       class="w-9 h-9 rounded-full bg-[#002f23] text-white flex items-center justify-center text-xs font-bold shrink-0"
                     >
-                      {{ getInitials(role?.name) }}
+                      {{ getInitials(licenseCategory?.name) }}
                     </div>
-                    <p class="font-semibold text-gray-800 capitalize">
-                      {{ role?.name || "-" }}
+                    <p class="font-semibold text-gray-800">
+                      {{ licenseCategory?.name || "-" }}
                     </p>
                   </div>
                 </td>
-                <!-- Permissions -->
+                <!-- Code -->
                 <td class="py-3 px-5">
-                  <div
-                    v-if="(role?.permissions || []).length"
-                    class="flex flex-wrap gap-1"
+                  <span
+                    class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700"
                   >
-                    <span
-                      v-for="p in role.permissions"
-                      :key="p"
-                      class="inline-block px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700"
-                    >
-                      {{ p }}
-                    </span>
-                  </div>
-                  <span v-else class="text-gray-300">-</span>
+                    {{ licenseCategory?.code || "-" }}
+                  </span>
                 </td>
 
                 <!-- Actions -->
@@ -95,15 +81,15 @@
                       size="small"
                       class="flex items-center justify-center bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100"
                       title="Edit"
-                      @click="openEditModal(role)"
+                      @click="openEditModal(licenseCategory)"
                     >
                       <EditOutlined />
                     </a-button>
                     <a-popconfirm
-                      title="Delete this role?"
+                      title="Delete this license category?"
                       ok-text="Yes"
                       cancel-text="No"
-                      @confirm="deleteRole(role.id)"
+                      @confirm="deleteLicenseCategory(licenseCategory.id)"
                     >
                       <a-button
                         size="small"
@@ -134,49 +120,42 @@
         </div>
       </div>
 
-      <!-- Add / Edit Role Modal -->
+      <!-- Add / Edit License Category Modal -->
       <a-modal
         v-model:open="isModalOpen"
-        :title="isEditMode ? 'Edit Role' : 'Add Role'"
+        :title="isEditMode ? 'Edit License Category' : 'Add License Category'"
         :footer="null"
         :destroy-on-close="true"
-        :width="560"
+        :width="460"
         @cancel="closeModal"
       >
-        <a-form :model="form" layout="vertical" autocomplete="off" @finish="submitRole">
+        <a-form
+          :model="form"
+          layout="vertical"
+          autocomplete="off"
+          @finish="submitLicenseCategory"
+        >
           <a-form-item
-            label="Role Name"
+            label="License Category Name"
             name="name"
-            :rules="[{ required: true, message: 'Please enter role name' }]"
+            :rules="[{ required: true, message: 'Please enter license category name' }]"
           >
-            <a-input v-model:value="form.name" placeholder="Enter role name" />
+            <a-input v-model:value="form.name" placeholder="e.g. Manufacturing" />
           </a-form-item>
 
-          <a-form-item label="Permissions">
-            <a-spin v-if="permissionsLoading" />
-            <a-checkbox-group
-              v-else
-              v-model:value="form.permissions"
-              class="permission-group w-full"
-            >
-              <div v-for="g in permissionGroups()" :key="g.group" class="mb-3 w-full">
-                <p
-                  class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1"
-                >
-                  {{ g.group }}
-                </p>
-                <div class="flex flex-wrap gap-x-5 gap-y-1">
-                  <a-checkbox
-                    v-for="p in g.items"
-                    :key="p.id"
-                    :value="p.name"
-                    class="capitalize"
-                  >
-                    {{ p.name.split(".")[1] || p.name }}
-                  </a-checkbox>
-                </div>
-              </div>
-            </a-checkbox-group>
+          <a-form-item
+            label="Code"
+            name="code"
+            :rules="[{ required: false, message: 'Please enter a unique code' }]"
+          >
+            <a-input v-model:value="form.code" placeholder="Enter License Code  " />
+          </a-form-item>
+
+          <a-form-item label="Active" name="is_active">
+            <a-select v-model:value="form.is_active">
+              <a-select-option :value="true">Active</a-select-option>
+              <a-select-option :value="false">Inactive</a-select-option>
+            </a-select>
           </a-form-item>
 
           <div class="flex justify-end gap-2 mt-4">
@@ -216,52 +195,37 @@ const searchQuery = ref("");
 const currentPage = ref(1);
 const pageSize = ref(10);
 
-const roles = ref([]);
-const permissionList = ref([]);
-const permissionsLoading = ref(false);
+const licenseCategoryList = ref([]);
 
 const isModalOpen = ref(false);
 const isEditMode = ref(false);
 const editingId = ref(null);
 
-const form = reactive({
-  name: "",
-  permissions: [],
-});
+const form = reactive({ name: "", code: "", is_active: true });
 
-// ---- data fetching ----
-const fetchData = async () => {
+// fetching ----
+const getLicenseCategories = async () => {
   isLoading.value = true;
   try {
-    const res = await axios.get(`${apiBase}/roles?per_page=100`, getTokenConfig());
-    roles.value =
+    const res = await axios.get(
+      `${apiBase}/license-categories?per_page=100`,
+      getTokenConfig()
+    );
+    licenseCategoryList.value =
       res?.data?.success && Array.isArray(res?.data?.data) ? res.data.data : [];
   } catch (error) {
-    roles.value = [];
-    showNotification("error", "Failed to fetch roles");
+    licenseCategoryList.value = [];
+    showNotification("error", "Failed to fetch license categories");
   } finally {
     isLoading.value = false;
-  }
-};
-
-const getPermissions = async () => {
-  permissionsLoading.value = true;
-  try {
-    const res = await axios.get(`${apiBase}/permissions?per_page=100`, getTokenConfig());
-    permissionList.value =
-      res?.data?.success && Array.isArray(res?.data?.data) ? res.data.data : [];
-  } catch (error) {
-    permissionList.value = [];
-    console.error("Failed to fetch permissions", error?.response?.data || error);
-  } finally {
-    permissionsLoading.value = false;
   }
 };
 
 // ---- modal ----
 const resetForm = () => {
   form.name = "";
-  form.permissions = [];
+  form.code = "";
+  form.is_active = true;
   editingId.value = null;
 };
 
@@ -269,70 +233,100 @@ const openAddModal = () => {
   resetForm();
   isEditMode.value = false;
   isModalOpen.value = true;
-  if (!permissionList.value.length) getPermissions();
 };
 
-const openEditModal = (role) => {
+const openEditModal = (licenseCategory) => {
   resetForm();
   isEditMode.value = true;
-  editingId.value = role?.id ?? null;
-  form.name = role?.name ?? "";
-  form.permissions = [...(role?.permissions || [])];
+  editingId.value = licenseCategory?.id ?? null;
+  form.name = licenseCategory?.name ?? "";
+  form.code = licenseCategory?.code ?? "";
+  form.is_active = licenseCategory?.is_active ?? true;
   isModalOpen.value = true;
-  if (!permissionList.value.length) getPermissions();
 };
 
 const closeModal = () => {
   isModalOpen.value = false;
 };
 
-// ---- create / update ----
-const submitRole = async () => {
+// ---- create ----
+const createLicenseCategory = async () => {
   isSubmitting.value = true;
   try {
     const payload = {
       name: form.name,
-      permissions: form.permissions,
+      code: form.code || null,
+      is_active: form.is_active,
     };
-
-    const res = isEditMode.value
-      ? await axios.put(`${apiBase}/roles/${editingId.value}`, payload, getTokenConfig())
-      : await axios.post(`${apiBase}/roles`, payload, getTokenConfig());
-
-    if (res?.data?.success) {
-      showNotification(
-        "success",
-        res?.data?.message || (isEditMode.value ? "Role updated" : "Role created")
-      );
-      closeModal();
-      fetchData();
-    } else {
-      showNotification("error", res?.data?.message || "Operation failed");
-    }
+    const res = await axios.post(
+      `${apiBase}/license-categories`,
+      payload,
+      getTokenConfig()
+    );
+    showNotification("success", res?.data?.message || "License category created");
+    closeModal();
+    getLicenseCategories();
   } catch (error) {
-    const data = error?.response?.data;
-    const firstError = data?.errors ? Object.values(data.errors)?.[0]?.[0] : null;
     showNotification(
       "error",
-      firstError || data?.message || error?.message || "Something went wrong"
+      error?.response?.data?.message || "Failed to create license category"
     );
   } finally {
     isSubmitting.value = false;
   }
 };
 
-// ---- delete ----
-const deleteRole = async (id) => {
+// ---- update  ----
+const updateLicenseCategory = async () => {
+  isSubmitting.value = true;
   try {
-    const res = await axios.delete(`${apiBase}/roles/${id}`, getTokenConfig());
+    const payload = {
+      name: form.name,
+      code: form.code || null,
+      is_active: form.is_active,
+    };
+    const res = await axios.put(
+      `${apiBase}/license-categories/${editingId.value}`,
+      payload,
+      getTokenConfig()
+    );
+    showNotification("success", res?.data?.message || "License category updated");
+    closeModal();
+    getLicenseCategories();
+  } catch (error) {
+    showNotification(
+      "error",
+      error?.response?.data?.message || "Failed to update license category"
+    );
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
+const submitLicenseCategory = () =>
+  isEditMode.value ? updateLicenseCategory() : createLicenseCategory();
+
+// ---- delete ----
+const deleteLicenseCategory = async (id) => {
+  try {
+    const res = await axios.delete(
+      `${apiBase}/license-categories/${id}`,
+      getTokenConfig()
+    );
     if (res?.data?.success || res?.status === 204) {
-      showNotification("success", res?.data?.message || "Role deleted");
-      await fetchData();
+      showNotification("success", res?.data?.message || "License category deleted");
+      await getLicenseCategories();
     } else {
-      showNotification("error", res?.data?.message || "Failed to delete role");
+      showNotification(
+        "error",
+        res?.data?.message || "Failed to delete license category"
+      );
     }
   } catch (error) {
-    showNotification("error", error?.response?.data?.message || "Failed to delete role");
+    showNotification(
+      "error",
+      error?.response?.data?.message || "Failed to delete license category"
+    );
   }
 };
 
@@ -345,6 +339,8 @@ const getInitials = (name) =>
     .join("")
     .toUpperCase();
 
+const groupOf = (name) => String(name ?? "").split(".")[0] || "-";
+
 const formatDate = (value) => {
   if (!value) return "-";
   const d = new Date(value);
@@ -356,23 +352,19 @@ const formatDate = (value) => {
   });
 };
 
-const totalRoles = () => roles.value.length;
-const totalPermissions = () => permissionList.value.length;
+const totalLicenseCategories = () => licenseCategoryList.value.length;
 
-const permissionGroups = () => {
-  const groups = {};
-  (permissionList.value || []).forEach((p) => {
-    const key = String(p.name).split(".")[0];
-    (groups[key] = groups[key] || []).push(p);
-  });
-  return Object.entries(groups).map(([group, items]) => ({ group, items }));
+const groupCount = () => {
+  const set = new Set();
+  licenseCategoryList.value.forEach((lc) => set.add(groupOf(lc?.name)));
+  return set.size;
 };
 
 const filteredData = () => {
   const q = searchQuery.value.trim().toLowerCase();
-  if (!q) return roles.value;
-  return roles.value.filter((r) =>
-    String(r?.name ?? "")
+  if (!q) return licenseCategoryList.value;
+  return licenseCategoryList.value.filter((lc) =>
+    String(lc?.name ?? "")
       .toLowerCase()
       .includes(q)
   );
@@ -388,16 +380,6 @@ watch(searchQuery, () => {
 });
 
 onMounted(() => {
-  fetchData();
-  getPermissions();
+  getLicenseCategories();
 });
 </script>
-
-<style scoped>
-/* Let flex gaps control spacing — remove Ant's default sibling margin
-   so checkboxes pack evenly without large gaps. */
-.permission-group :deep(.ant-checkbox-wrapper) {
-  margin-left: 0 !important;
-  margin-inline-start: 0 !important;
-}
-</style>
