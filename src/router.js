@@ -16,6 +16,7 @@ import License from "./views/license/license.vue";
 import LicenseCreate from "./views/license/license_create.vue";
 import LicenseEdit from "./views/license/license_edit.vue";
 import LicenseHistory from "./views/license/license_history.vue";
+import LicenseRenew from "./views/license/license_renew.vue";
 import LicenseRenewalDetail from "./views/license/license_renewal_detail.vue";
 import LicenseDetail from "./views/license/license_detail.vue";
 
@@ -90,6 +91,12 @@ const routes = [
     path: "/license/:id/history",
     name: "license-history",
     component: LicenseHistory,
+  },
+  // license renew
+  {
+    path: "/license/:id/renew",
+    name: "license-renew",
+    component: LicenseRenew,
   },
   // renewal detail
   {

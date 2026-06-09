@@ -95,7 +95,7 @@
               </thead>
               <tbody class="text-gray-700">
                 <tr
-                  v-for="ev in events"
+                  v-for="ev in paginatedEvents()"
                   :key="ev.RenewalID"
                   class="border-b border-gray-50 hover:bg-gray-50 transition-colors"
                 >
@@ -148,6 +148,19 @@
               </tbody>
             </table>
           </div>
+
+          <!-- Pagination -->
+          <div
+            v-if="events.length > 0"
+            class="flex justify-end p-4 border-t border-gray-100"
+          >
+            <a-pagination
+              v-model:current="currentPage"
+              :total="events.length"
+              :page-size="pageSize"
+              :show-size-changer="false"
+            />
+          </div>
         </div>
       </template>
     </div>
@@ -176,6 +189,14 @@ const viewRenewal = (ev) => {
 const isLoading = ref(false);
 const license = ref(null);
 const events = ref([]);
+
+const currentPage = ref(1);
+const pageSize = ref(10);
+
+const paginatedEvents = () => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  return events.value.slice(start, start + pageSize.value);
+};
 
 const getHistory = async () => {
   isLoading.value = true;

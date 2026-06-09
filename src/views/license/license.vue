@@ -241,10 +241,9 @@ const viewLicense = (license) => {
   router.push({ name: "license-detail", params: { id: license?.LicenseID } });
 };
 
-// const renewLicense = (license) => {
-//   // TODO: open the renewal flow for this license
-//   showNotification("info", `Renew: ${license?.LicenseName || "license"}`);
-// };
+const renewLicense = (license) => {
+  router.push({ name: "license-renew", params: { id: license?.LicenseID } });
+};
 
 const editLicense = (license) => {
   router.push({ name: "license-edit", params: { id: license?.LicenseID } });
