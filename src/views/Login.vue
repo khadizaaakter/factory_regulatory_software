@@ -4,10 +4,14 @@
       <!-- Left side (Image / brand section) -->
       <div class="login-image-side">
         <div class="image-overlay"></div>
-        <img src="/img/5017953.jpg" alt="Login Illustration" class="brand-illustration" />
-        <div class="brand-caption">
+        <img
+          src="/src/assets/images/factory.png"
+          alt="Login Illustration"
+          class="brand-illustration"
+        />
+        <!-- <div class="brand-caption">
           <h3>Factory Regulatory Software</h3>
-        </div>
+        </div> -->
       </div>
 
       <!-- Right side (Login form section) -->
@@ -114,10 +118,11 @@ const data = reactive({
 }
 
 .brand-illustration {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  padding: 2.5rem;
+  object-fit: cover;
 }
 
 .image-overlay {

@@ -25,7 +25,7 @@
     </a-menu-item> -->
 
     <!-- settings submenu -->
-    <a-sub-menu v-if="showSettingsMenu()" key="settings-group">
+    <a-sub-menu v-if="hasPermission('Settings')" key="settings-group">
       <template #icon>
         <SettingOutlined />
       </template>
@@ -110,8 +110,6 @@ const hasPermission = (permission) => {
 const hasAnyPermission = (permissions) => {
   return permissions.some((p) => hasPermission(p));
 };
-
-const showSettingsMenu = () => hasAnyPermission(["License Category", "Business"]);
 
 const showUserMenu = () => hasAnyPermission(["User Manager", "Role", "Permissions"]);
 

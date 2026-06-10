@@ -18,188 +18,213 @@
 
       <a-form :model="form" layout="vertical" @finish="submit">
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm mb-6">
-        <!-- General -->
-        <div class="p-6">
-          <h2 class="text-base font-bold text-gray-800 mb-4">General</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-            <a-form-item
-              label="License Name"
-              name="LicenseName"
-              :rules="[{ required: true, message: 'Please enter license name' }]"
+          <!-- General -->
+          <div class="p-6">
+            <h2 class="text-base font-bold text-gray-800 mb-4">General</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+              <a-form-item
+                label="License Name"
+                name="LicenseName"
+                :rules="[{ required: true, message: 'Please enter license name' }]"
+              >
+                <a-input
+                  v-model:value="form.LicenseName"
+                  placeholder="e.g. Trade License"
+                />
+              </a-form-item>
+
+              <a-form-item label="License Number" name="LicenseNumber">
+                <a-input
+                  v-model:value="form.LicenseNumber"
+                  placeholder="e.g. TL-2024-0043"
+                />
+              </a-form-item>
+
+              <a-form-item label="Issuing Authority" name="IssuingAuthority">
+                <a-input
+                  v-model:value="form.IssuingAuthority"
+                  placeholder="e.g. City Council"
+                />
+              </a-form-item>
+
+              <a-form-item
+                label="Business"
+                name="BusinessId"
+                :rules="[{ required: true, message: 'Please select a business' }]"
+              >
+                <a-select
+                  v-model:value="form.BusinessId"
+                  placeholder="Select business"
+                  :options="businessOptions"
+                  :loading="loadingOptions"
+                  show-search
+                  option-filter-prop="label"
+                />
+              </a-form-item>
+
+              <a-form-item
+                label="License Category"
+                name="LicenseCategoryId"
+                :rules="[{ required: true, message: 'Please select a category' }]"
+              >
+                <a-select
+                  v-model:value="form.LicenseCategoryId"
+                  placeholder="Select category"
+                  :options="categoryOptions"
+                  :loading="loadingOptions"
+                  show-search
+                  option-filter-prop="label"
+                />
+              </a-form-item>
+
+              <a-form-item label="Scope of License" name="ScopeOfLicense">
+                <a-input
+                  v-model:value="form.ScopeOfLicense"
+                  placeholder="e.g. Retail trade activities"
+                />
+              </a-form-item>
+            </div>
+          </div>
+
+          <!-- Dates & Reminders -->
+          <div class="p-6 border-t border-gray-100">
+            <h2 class="text-base font-bold text-gray-800 mb-4">Dates & Reminders</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+              <a-form-item label="First Issued Date" name="FirstIssuedDate">
+                <a-date-picker
+                  v-model:value="form.FirstIssuedDate"
+                  value-format="YYYY-MM-DD"
+                  class="w-full"
+                />
+              </a-form-item>
+
+              <a-form-item label="Renew Date" name="RenewDate">
+                <a-date-picker
+                  v-model:value="form.RenewDate"
+                  value-format="YYYY-MM-DD"
+                  class="w-full"
+                />
+              </a-form-item>
+
+              <a-form-item label="Expiry Date" name="ExpiryDate">
+                <a-date-picker
+                  v-model:value="form.ExpiryDate"
+                  value-format="YYYY-MM-DD"
+                  class="w-full"
+                />
+              </a-form-item>
+
+              <a-form-item label="Reminder Days" name="ReminderDays">
+                <div class="flex items-center gap-3 flex-wrap">
+                  <a-date-picker
+                    v-model:value="reminders.red"
+                    value-format="YYYY-MM-DD"
+                    placeholder="Expired"
+                    class="rem-pick rem-red"
+                  />
+                  <a-date-picker
+                    v-model:value="reminders.yellow"
+                    value-format="YYYY-MM-DD"
+                    placeholder="Expiring Soon"
+                    class="rem-pick rem-yellow"
+                  />
+                  <a-date-picker
+                    v-model:value="reminders.green"
+                    value-format="YYYY-MM-DD"
+                    placeholder="Safe"
+                    class="rem-pick rem-green"
+                  />
+                </div>
+              </a-form-item>
+            </div>
+          </div>
+
+          <!-- Financials -->
+          <div class="p-6 border-t border-gray-100">
+            <h2 class="text-base font-bold text-gray-800 mb-4">Financials</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-x-6">
+              <a-form-item label="License Fee" name="LicenseFee">
+                <a-input-number v-model:value="form.LicenseFee" class="w-full" :min="0" />
+              </a-form-item>
+              <a-form-item label="Renew Fee" name="RenewFee">
+                <a-input-number v-model:value="form.RenewFee" class="w-full" :min="0" />
+              </a-form-item>
+              <a-form-item label="Renew VAT / AIT" name="RenewVatAIT">
+                <a-input-number
+                  v-model:value="form.RenewVatAIT"
+                  class="w-full"
+                  :min="0"
+                />
+              </a-form-item>
+              <a-form-item label="Office Expenses" name="OfficeExpenses">
+                <a-input-number
+                  v-model:value="form.OfficeExpenses"
+                  class="w-full"
+                  :min="0"
+                />
+              </a-form-item>
+            </div>
+          </div>
+
+          <!-- Contact Details -->
+          <div class="p-6 border-t border-gray-100">
+            <h2 class="text-base font-bold text-gray-800 mb-4">Contact Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+              <a-form-item label="Name">
+                <a-input
+                  v-model:value="form.contact.name"
+                  placeholder="e.g. Mr. Rahim Uddin"
+                />
+              </a-form-item>
+              <a-form-item label="Designation">
+                <a-input
+                  v-model:value="form.contact.designation"
+                  placeholder="e.g. Compliance Officer"
+                />
+              </a-form-item>
+              <a-form-item label="Email">
+                <a-input
+                  v-model:value="form.contact.email"
+                  placeholder="e.g. name@email.com"
+                />
+              </a-form-item>
+              <a-form-item label="Phone">
+                <a-input v-model:value="form.contact.phone" placeholder="e.g. +8801..." />
+              </a-form-item>
+              <a-form-item label="Address" class="md:col-span-2">
+                <a-input v-model:value="form.contact.address" placeholder="Address" />
+              </a-form-item>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="p-6 border-t border-gray-100">
+            <h2 class="text-base font-bold text-gray-800 mb-4">Additional Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+              <a-form-item label="Terms & Conditions" name="TermsAndConditions">
+                <a-textarea v-model:value="form.TermsAndConditions" :rows="3" />
+              </a-form-item>
+              <a-form-item label="Remarks" name="Remarks">
+                <a-textarea v-model:value="form.Remarks" :rows="3" />
+              </a-form-item>
+            </div>
+          </div>
+
+          <!-- Documents -->
+          <div class="p-6 border-t border-gray-100">
+            <h2 class="text-base font-bold text-gray-800 mb-4">Documents</h2>
+            <a-upload
+              v-model:file-list="fileList"
+              :before-upload="beforeUpload"
+              :multiple="true"
+              accept=".pdf,.xls,.xlsx,.csv,.svg,.png,.jpg,.jpeg,.doc,.docx"
             >
-              <a-input v-model:value="form.LicenseName" placeholder="e.g. Trade License" />
-            </a-form-item>
-
-            <a-form-item label="License Number" name="LicenseNumber">
-              <a-input
-                v-model:value="form.LicenseNumber"
-                placeholder="e.g. TL-2024-0043"
-              />
-            </a-form-item>
-
-            <a-form-item label="Issuing Authority" name="IssuingAuthority">
-              <a-input
-                v-model:value="form.IssuingAuthority"
-                placeholder="e.g. City Council"
-              />
-            </a-form-item>
-
-            <a-form-item
-              label="Business"
-              name="BusinessId"
-              :rules="[{ required: true, message: 'Please select a business' }]"
-            >
-              <a-select
-                v-model:value="form.BusinessId"
-                placeholder="Select business"
-                :options="businessOptions"
-                :loading="loadingOptions"
-                show-search
-                option-filter-prop="label"
-              />
-            </a-form-item>
-
-            <a-form-item
-              label="License Category"
-              name="LicenseCategoryId"
-              :rules="[{ required: true, message: 'Please select a category' }]"
-            >
-              <a-select
-                v-model:value="form.LicenseCategoryId"
-                placeholder="Select category"
-                :options="categoryOptions"
-                :loading="loadingOptions"
-                show-search
-                option-filter-prop="label"
-              />
-            </a-form-item>
-
-            <a-form-item label="Scope of License" name="ScopeOfLicense">
-              <a-input
-                v-model:value="form.ScopeOfLicense"
-                placeholder="e.g. Retail trade activities"
-              />
-            </a-form-item>
+              <a-button> <UploadOutlined /> Select Files </a-button>
+            </a-upload>
+            <p class="text-xs text-gray-400 mt-2">
+              You can attach multiple files (PDF, Excel, SVG, images, Word).
+            </p>
           </div>
-        </div>
-
-        <!-- Dates & Reminders -->
-        <div class="p-6 border-t border-gray-100">
-          <h2 class="text-base font-bold text-gray-800 mb-4">Dates & Reminders</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-            <a-form-item label="First Issued Date" name="FirstIssuedDate">
-              <a-date-picker
-                v-model:value="form.FirstIssuedDate"
-                value-format="YYYY-MM-DD"
-                class="w-full"
-              />
-            </a-form-item>
-
-            <a-form-item label="Renew Date" name="RenewDate">
-              <a-date-picker
-                v-model:value="form.RenewDate"
-                value-format="YYYY-MM-DD"
-                class="w-full"
-              />
-            </a-form-item>
-
-            <a-form-item label="Expiry Date" name="ExpiryDate">
-              <a-date-picker
-                v-model:value="form.ExpiryDate"
-                value-format="YYYY-MM-DD"
-                class="w-full"
-              />
-            </a-form-item>
-
-            <a-form-item label="Reminder Days" name="ReminderDays">
-              <a-select
-                v-model:value="form.ReminderDays"
-                mode="tags"
-                placeholder="e.g. 30, 15, 7"
-                :options="reminderPresetOptions"
-              />
-            </a-form-item>
-          </div>
-        </div>
-
-        <!-- Financials -->
-        <div class="p-6 border-t border-gray-100">
-          <h2 class="text-base font-bold text-gray-800 mb-4">Financials</h2>
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-x-6">
-            <a-form-item label="License Fee" name="LicenseFee">
-              <a-input-number v-model:value="form.LicenseFee" class="w-full" :min="0" />
-            </a-form-item>
-            <a-form-item label="Renew Fee" name="RenewFee">
-              <a-input-number v-model:value="form.RenewFee" class="w-full" :min="0" />
-            </a-form-item>
-            <a-form-item label="Renew VAT / AIT" name="RenewVatAIT">
-              <a-input-number v-model:value="form.RenewVatAIT" class="w-full" :min="0" />
-            </a-form-item>
-            <a-form-item label="Office Expenses" name="OfficeExpenses">
-              <a-input-number
-                v-model:value="form.OfficeExpenses"
-                class="w-full"
-                :min="0"
-              />
-            </a-form-item>
-          </div>
-        </div>
-
-        <!-- Contact Details -->
-        <div class="p-6 border-t border-gray-100">
-          <h2 class="text-base font-bold text-gray-800 mb-4">Contact Details</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-            <a-form-item label="Name">
-              <a-input v-model:value="form.contact.name" placeholder="e.g. Mr. Rahim Uddin" />
-            </a-form-item>
-            <a-form-item label="Designation">
-              <a-input
-                v-model:value="form.contact.designation"
-                placeholder="e.g. Compliance Officer"
-              />
-            </a-form-item>
-            <a-form-item label="Email">
-              <a-input v-model:value="form.contact.email" placeholder="e.g. name@email.com" />
-            </a-form-item>
-            <a-form-item label="Phone">
-              <a-input v-model:value="form.contact.phone" placeholder="e.g. +8801..." />
-            </a-form-item>
-            <a-form-item label="Address" class="md:col-span-2">
-              <a-input v-model:value="form.contact.address" placeholder="Address" />
-            </a-form-item>
-          </div>
-        </div>
-
-        <!-- Notes -->
-        <div class="p-6 border-t border-gray-100">
-          <h2 class="text-base font-bold text-gray-800 mb-4">Additional Information</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-            <a-form-item label="Terms & Conditions" name="TermsAndConditions">
-              <a-textarea v-model:value="form.TermsAndConditions" :rows="3" />
-            </a-form-item>
-            <a-form-item label="Remarks" name="Remarks">
-              <a-textarea v-model:value="form.Remarks" :rows="3" />
-            </a-form-item>
-          </div>
-        </div>
-
-        <!-- Documents -->
-        <div class="p-6 border-t border-gray-100">
-          <h2 class="text-base font-bold text-gray-800 mb-4">Documents</h2>
-          <a-upload
-            v-model:file-list="fileList"
-            :before-upload="beforeUpload"
-            :multiple="true"
-            accept=".pdf,.xls,.xlsx,.csv,.svg,.png,.jpg,.jpeg,.doc,.docx"
-          >
-            <a-button>
-              <UploadOutlined /> Select Files
-            </a-button>
-          </a-upload>
-          <p class="text-xs text-gray-400 mt-2">
-            You can attach multiple files (PDF, Excel, SVG, images, Word).
-          </p>
-        </div>
         </div>
 
         <!-- Footer actions -->
@@ -238,11 +263,25 @@ const fileList = ref([]);
 const businessOptions = ref([]);
 const categoryOptions = ref([]);
 
-const reminderPresetOptions = [
-  { value: "30", label: "30" },
-  { value: "15", label: "15" },
-  { value: "7", label: "7" },
-];
+// One reminder date per tier: red (<=7), yellow (8-15), green (16+).
+const reminders = reactive({ red: null, yellow: null, green: null });
+
+// date string -> day-count integer (ExpiryDate - date, in days). The API wants integers.
+const dateToDayCount = (dateStr) => {
+  if (!dateStr || !form.ExpiryDate) return null;
+  const exp = new Date(form.ExpiryDate);
+  const d = new Date(dateStr);
+  if (Number.isNaN(exp.getTime()) || Number.isNaN(d.getTime())) return null;
+  const days = Math.round((exp - d) / 86400000);
+  return days >= 0 ? days : null;
+};
+
+// Reminder dates converted to integer day-counts for the API.
+const reminderDays = () =>
+  [reminders.red, reminders.yellow, reminders.green]
+    .filter(Boolean)
+    .map(dateToDayCount)
+    .filter((v) => v !== null);
 
 const form = reactive({
   LicenseName: "",
@@ -254,7 +293,7 @@ const form = reactive({
   FirstIssuedDate: null,
   RenewDate: null,
   ExpiryDate: null,
-  ReminderDays: ["30", "15", "7"],
+  ReminderDays: [],
   LicenseFee: null,
   RenewFee: null,
   RenewVatAIT: null,
@@ -318,7 +357,7 @@ const submit = async () => {
     appendIf("TermsAndConditions", form.TermsAndConditions);
     appendIf("Remarks", form.Remarks);
 
-    (form.ReminderDays || []).forEach((d, i) => {
+    reminderDays().forEach((d, i) => {
       fd.append(`ReminderDays[${i}]`, d);
     });
 
@@ -342,10 +381,7 @@ const submit = async () => {
   } catch (error) {
     const data = error?.response?.data;
     const firstError = data?.errors ? Object.values(data.errors)?.[0]?.[0] : null;
-    showNotification(
-      "error",
-      firstError || data?.message || "Failed to create license"
-    );
+    showNotification("error", firstError || data?.message || "Failed to create license");
   } finally {
     isSubmitting.value = false;
   }
@@ -355,3 +391,46 @@ onMounted(() => {
   loadOptions();
 });
 </script>
+
+<style scoped>
+/* Right-align the value inside all number inputs */
+:deep(.ant-input-number-input) {
+  text-align: right;
+  padding-right: 25px;
+}
+
+/* Tier-coloured reminder date pickers */
+:deep(.rem-red) {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+:deep(.rem-red .ant-picker-input > input),
+:deep(.rem-red .ant-picker-suffix) {
+  color: #b91c1c;
+}
+:deep(.rem-yellow) {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+:deep(.rem-yellow .ant-picker-input > input),
+:deep(.rem-yellow .ant-picker-suffix) {
+  color: #b45309;
+}
+:deep(.rem-green) {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+:deep(.rem-green .ant-picker-input > input),
+:deep(.rem-green .ant-picker-suffix) {
+  color: #15803d;
+}
+:deep(.rem-red .ant-picker-input > input::placeholder) {
+  color: #ef4444;
+}
+:deep(.rem-yellow .ant-picker-input > input::placeholder) {
+  color: #d97706;
+}
+:deep(.rem-green .ant-picker-input > input::placeholder) {
+  color: #16a34a;
+}
+</style>

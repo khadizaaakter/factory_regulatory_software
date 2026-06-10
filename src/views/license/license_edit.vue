@@ -115,12 +115,26 @@
               </a-form-item>
 
               <a-form-item label="Reminder Days" name="ReminderDays">
-                <a-select
-                  v-model:value="form.ReminderDays"
-                  mode="tags"
-                  placeholder="e.g. 30, 15, 7"
-                  :options="reminderPresetOptions"
-                />
+                <div class="flex items-center gap-3 flex-wrap">
+                  <a-date-picker
+                    v-model:value="reminders.red"
+                    value-format="YYYY-MM-DD"
+                    placeholder="Expired"
+                    class="rem-pick rem-red"
+                  />
+                  <a-date-picker
+                    v-model:value="reminders.yellow"
+                    value-format="YYYY-MM-DD"
+                    placeholder="Expiring Soon"
+                    class="rem-pick rem-yellow"
+                  />
+                  <a-date-picker
+                    v-model:value="reminders.green"
+                    value-format="YYYY-MM-DD"
+                    placeholder="Safe"
+                    class="rem-pick rem-green"
+                  />
+                </div>
               </a-form-item>
             </div>
           </div>
@@ -129,7 +143,7 @@
           <div class="p-6 border-t border-gray-100">
             <h2 class="text-base font-bold text-gray-800 mb-4">Financials</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-x-6">
-              <a-form-item label="License Fee" name="LicenseFee">
+              <a-form-item label="License Fee" name="LicenseFee ">
                 <a-input-number v-model:value="form.LicenseFee" class="w-full" :min="0" />
               </a-form-item>
               <a-form-item label="Renew Fee" name="RenewFee">
@@ -293,11 +307,38 @@ const deletedDocIds = ref([]);
 const businessOptions = ref([]);
 const categoryOptions = ref([]);
 
-const reminderPresetOptions = [
-  { value: "30", label: "30" },
-  { value: "15", label: "15" },
-  { value: "7", label: "7" },
-];
+// One reminder date per tier: red (<=7), yellow (8-15), green (16+).
+const reminders = reactive({ red: null, yellow: null, green: null });
+
+// day-count (e.g. 30) -> date string (ExpiryDate - 30 days).
+const dayCountToDate = (n, expiry) => {
+  if (n === undefined || n === null || Number.isNaN(Number(n))) return null;
+  if (!expiry) return null;
+  const exp = new Date(expiry);
+  if (Number.isNaN(exp.getTime())) return null;
+  exp.setDate(exp.getDate() - Number(n));
+  const y = exp.getFullYear();
+  const m = String(exp.getMonth() + 1).padStart(2, "0");
+  const day = String(exp.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+// date string -> day-count integer (ExpiryDate - date, in days).
+const dateToDayCount = (dateStr) => {
+  if (!dateStr || !form.ExpiryDate) return null;
+  const exp = new Date(form.ExpiryDate);
+  const d = new Date(dateStr);
+  if (Number.isNaN(exp.getTime()) || Number.isNaN(d.getTime())) return null;
+  const days = Math.round((exp - d) / 86400000);
+  return days >= 0 ? days : null;
+};
+
+// Reminder dates converted back to integer day-counts for the API.
+const reminderDays = () =>
+  [reminders.red, reminders.yellow, reminders.green]
+    .filter(Boolean)
+    .map(dateToDayCount)
+    .filter((v) => v !== null);
 
 const form = reactive({
   LicenseName: "",
@@ -364,7 +405,14 @@ const loadLicense = async () => {
     form.FirstIssuedDate = toDate(d.FirstIssuedDate);
     form.RenewDate = toDate(d.RenewDate);
     form.ExpiryDate = toDate(d.ExpiryDate);
-    form.ReminderDays = Array.isArray(d.ReminderDays) ? d.ReminderDays.map(String) : [];
+    // ReminderDays are day-counts (integers). Convert each to a date
+    // (ExpiryDate - days) and fill the slots in order so every value shows.
+    const rd = (Array.isArray(d.ReminderDays) ? d.ReminderDays : [])
+      .map(Number)
+      .filter((n) => !Number.isNaN(n));
+    reminders.red = dayCountToDate(rd[0], d.ExpiryDate);
+    reminders.yellow = dayCountToDate(rd[1], d.ExpiryDate);
+    reminders.green = dayCountToDate(rd[2], d.ExpiryDate);
     form.LicenseFee = toNum(d.LicenseFee);
     form.RenewFee = toNum(d.RenewFee);
     form.RenewVatAIT = toNum(d.RenewVatAIT);
@@ -411,9 +459,7 @@ const downloadDocument = async (doc) => {
 // Mark an existing document for deletion (removed from the view, sent on submit).
 const removeExistingDoc = (doc) => {
   deletedDocIds.value.push(doc.DocumentID);
-  existingDocs.value = existingDocs.value.filter(
-    (d) => d.DocumentID !== doc.DocumentID
-  );
+  existingDocs.value = existingDocs.value.filter((d) => d.DocumentID !== doc.DocumentID);
 };
 
 const goBack = () => router.push({ name: "license" });
@@ -442,7 +488,7 @@ const submit = async () => {
     appendIf("TermsAndConditions", form.TermsAndConditions);
     appendIf("Remarks", form.Remarks);
 
-    (form.ReminderDays || []).forEach((d, i) => {
+    reminderDays().forEach((d, i) => {
       fd.append(`ReminderDays[${i}]`, d);
     });
 
@@ -488,3 +534,46 @@ onMounted(() => {
   loadLicense();
 });
 </script>
+
+<style scoped>
+/* Right-align the value inside all number inputs */
+:deep(.ant-input-number-input) {
+  text-align: right;
+  padding-right: 25px;
+}
+
+/* Tier-coloured reminder date pickers */
+:deep(.rem-red) {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+:deep(.rem-red .ant-picker-input > input),
+:deep(.rem-red .ant-picker-suffix) {
+  color: #b91c1c;
+}
+:deep(.rem-yellow) {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+:deep(.rem-yellow .ant-picker-input > input),
+:deep(.rem-yellow .ant-picker-suffix) {
+  color: #b45309;
+}
+:deep(.rem-green) {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+:deep(.rem-green .ant-picker-input > input),
+:deep(.rem-green .ant-picker-suffix) {
+  color: #15803d;
+}
+:deep(.rem-red .ant-picker-input > input::placeholder) {
+  color: #ef4444;
+}
+:deep(.rem-yellow .ant-picker-input > input::placeholder) {
+  color: #d97706;
+}
+:deep(.rem-green .ant-picker-input > input::placeholder) {
+  color: #16a34a;
+}
+</style>

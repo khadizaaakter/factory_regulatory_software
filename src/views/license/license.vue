@@ -22,6 +22,7 @@
           </a-input>
 
           <a-button
+            v-if="can('license_master.create')"
             type="primary"
             class="flex items-center gap-1 bg-[#002f23] h-9 px-4"
             @click="openAddModal"
@@ -44,7 +45,7 @@
                 <th class="py-3 px-5">Renew Date</th>
                 <th class="py-3 px-5">Expiry Date</th>
                 <th class="py-3 px-5">Reminder</th>
-                <th class="py-3 px-5">Renewal</th>
+                <th v-if="canRenewPerm" class="py-3 px-5">Renewal</th>
                 <th class="py-3 px-5">Actions</th>
                 <!-- <th class="py-3 px-5">Status</th> -->
               </tr>
@@ -106,18 +107,28 @@
                   <span v-else>-</span>
                 </td>
                 <!-- Renewal -->
-                <td class="py-3 px-5">
-                  <a-button
-                    size="small"
-                    class="flex items-center gap-1 bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100"
-                    :disabled="!canRenew(license)"
-                    :title="
-                      canRenew(license) ? 'Renew' : 'Available from the expiry date'
-                    "
-                    @click="renewLicense(license)"
-                  >
-                    <ReloadOutlined /> Renew
-                  </a-button>
+                <td v-if="canRenewPerm" class="py-3 px-5">
+                  <div class="flex items-center gap-2">
+                    <a-button
+                      size="small"
+                      class="flex items-center gap-1 bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100"
+                      :disabled="!canRenew(license)"
+                      :title="
+                        canRenew(license) ? 'Renew' : 'Available from the expiry date'
+                      "
+                      @click="renewLicense(license)"
+                    >
+                      <ReloadOutlined /> Renew
+                    </a-button>
+
+                    <!-- Amend -->
+                    <!-- <a-button
+                      size="small"
+                      class="flex items-center gap-1 bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100"
+                    >
+                      <ReloadOutlined /> Ammend
+                    </a-button> -->
+                  </div>
                 </td>
                 <!-- Actions -->
                 <td class="py-3 px-5">
@@ -131,6 +142,7 @@
                       <EyeOutlined />
                     </a-button>
                     <a-button
+                      v-if="can('license_master.edit')"
                       size="small"
                       class="flex items-center justify-center bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100"
                       title="Edit"
@@ -139,6 +151,7 @@
                       <EditOutlined />
                     </a-button>
                     <a-popconfirm
+                      v-if="can('license_master.delete')"
                       title="Delete this license?"
                       ok-text="Yes"
                       cancel-text="No"
@@ -204,9 +217,13 @@ import {
 import { apiBase } from "@/config";
 import { getTokenConfig } from "@/utilities/tokenConfig";
 import { showNotification } from "@/utilities/notification";
+import { can } from "@/utilities/common";
 import axios from "axios";
 
 const router = useRouter();
+
+// Whether the current user may renew licenses — gates the whole Renewal column.
+const canRenewPerm = can("license_master.renew");
 
 const isLoading = ref(false);
 const searchQuery = ref("");
@@ -221,11 +238,15 @@ const getLicenses = async () => {
   try {
     const res = await axios.get(`${apiBase}/licenses?per_page=100`, getTokenConfig());
     const payload = res?.data?.data;
-    licenseList.value = Array.isArray(payload?.data)
+    const list = Array.isArray(payload?.data)
       ? payload.data
       : Array.isArray(payload)
       ? payload
       : [];
+    // Newest added first (highest LicenseID at the top).
+    licenseList.value = list
+      .slice()
+      .sort((a, b) => (b.LicenseID ?? 0) - (a.LicenseID ?? 0));
   } catch (error) {
     licenseList.value = [];
     showNotification("error", "Failed to fetch licenses");

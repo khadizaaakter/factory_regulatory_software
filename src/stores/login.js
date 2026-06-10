@@ -48,6 +48,12 @@ export const useLoginStore = defineStore("loginStore", {
             "user_permissions",
             JSON.stringify(this.mapPermissions(user?.permissions))
           );
+          // Raw dotted permissions (e.g. "license_master.edit") for button-level
+          // checks via can() in @/utilities/common.
+          localStorage.setItem(
+            "raw_permissions",
+            JSON.stringify(Array.isArray(user?.permissions) ? user.permissions : [])
+          );
 
           showNotification(
             "success",
@@ -77,11 +83,21 @@ export const useLoginStore = defineStore("loginStore", {
     mapPermissions(perms = []) {
       const list = Array.isArray(perms) ? perms : [];
       const has = (prefix) => list.some((p) => String(p).startsWith(prefix));
+      const hasExact = (name) => list.some((p) => String(p) === name);
 
-      const labels = new Set(["Dashboard"]);
+      const labels = new Set();
+
+      // Top-level menus are gated by their own dedicated menu permissions,
+      // separate from the module CRUD permissions (e.g. "license_master.view").
+      if (hasExact("menu.dashboard")) labels.add("Dashboard");
+      if (hasExact("menu.license")) labels.add("License");
+      if (hasExact("menu.settings")) labels.add("Settings");
+
+      // Settings children keep their own module permissions.
       if (has("businesses.")) labels.add("Business");
       if (has("license_categories.")) labels.add("License Category");
-      if (has("license_master.")) labels.add("License");
+
+      // User Management menu (unchanged).
       if (has("users.")) labels.add("User Manager");
       if (has("roles.")) labels.add("Role");
       if (has("permissions.")) labels.add("Permissions");

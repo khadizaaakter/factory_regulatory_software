@@ -88,6 +88,7 @@ const handleLogout = (router) => {
   localStorage.removeItem("email");
   localStorage.removeItem("role");
   localStorage.removeItem("user_permissions");
+  localStorage.removeItem("raw_permissions");
   router.push({ name: "login" });
 };
 

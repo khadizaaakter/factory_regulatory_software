@@ -263,6 +263,9 @@ const submit = async () => {
     appendIf("OfficeExpenses", form.OfficeExpenses);
     appendIf("Remarks", form.Remarks);
 
+    // A new renewal always starts "In Progress"; Approve later marks it "Completed".
+    fd.append("RenewalStatus", "In Progress");
+
     Object.entries(form.contact).forEach(([key, val]) => {
       if (val) fd.append(`ContactDetails[${key}]`, val);
     });
@@ -297,3 +300,10 @@ onMounted(() => {
   loadLicense();
 });
 </script>
+
+<style scoped>
+:deep(.ant-input-number-input) {
+  text-align: right;
+  padding-right: 25px;
+}
+</style>

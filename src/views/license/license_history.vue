@@ -82,7 +82,7 @@
                   class="text-gray-500 font-semibold border-b border-gray-100 text-left"
                 >
                   <th class="py-3 px-5">Type</th>
-                  <!-- <th class="py-3 px-5">Status</th> -->
+                  <th class="py-3 px-5">Status</th>
                   <th class="py-3 px-5">Previous Expiry</th>
                   <th class="py-3 px-5">New Expiry</th>
                   <th class="py-3 px-5">Next Renew</th>
@@ -90,6 +90,7 @@
                   <th class="py-3 px-5">Received Date</th>
                   <th class="py-3 px-5">Total Fees</th>
                   <th class="py-3 px-5">Created</th>
+                  <th v-if="canApprove" class="py-3 px-5">Approval</th>
                   <th class="py-3 px-5 text-right">Details</th>
                 </tr>
               </thead>
@@ -111,7 +112,7 @@
                       {{ ev.RenewalType || "-" }}
                     </span>
                   </td>
-                  <!-- <td class="py-3 px-5">
+                  <td class="py-3 px-5">
                     <span
                       class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium"
                       :class="
@@ -122,7 +123,7 @@
                     >
                       {{ ev.RenewalStatus || "-" }}
                     </span>
-                  </td> -->
+                  </td>
                   <td class="py-3 px-5">{{ formatDate(ev.PreviousExpiryDate) }}</td>
                   <td class="py-3 px-5">{{ formatDate(ev.NewExpiryDate) }}</td>
                   <td class="py-3 px-5">{{ formatDate(ev.NextRenewDate) }}</td>
@@ -134,6 +135,19 @@
                     {{ ev.TotalFees ?? "-" }}
                   </td>
                   <td class="py-3 px-5">{{ formatDate(ev.CreatedAt) }}</td>
+                  <td v-if="canApprove" class="py-3 px-5">
+                    <a-button
+                      :disabled="ev.RenewalStatus === 'Completed'"
+                      :class="
+                        ev.RenewalStatus === 'Completed'
+                          ? ''
+                          : '!text-white bg-[#002f23] hover:!text-white'
+                      "
+                      @click="approveRenewal(ev)"
+                    >
+                      Approve
+                    </a-button>
+                  </td>
                   <td class="py-3 px-5 text-right">
                     <a-button
                       size="small"
@@ -175,7 +189,11 @@ import MainLayout from "@/components/layout/MainLayout.vue";
 import { apiBase } from "@/config";
 import { getTokenConfig } from "@/utilities/tokenConfig";
 import { showNotification } from "@/utilities/notification";
+import { can } from "@/utilities/common";
 import axios from "axios";
+
+// Whether the current user may approve renewals — gates the whole Approval column.
+const canApprove = can("license_master.approve");
 
 const route = useRoute();
 const router = useRouter();
@@ -184,6 +202,28 @@ const goBack = () => router.back();
 
 const viewRenewal = (ev) => {
   router.push({ name: "renewal-detail", params: { id: ev.RenewalID } });
+};
+
+// Approve a renewal -> mark its status Completed.
+const approveRenewal = async (ev) => {
+  try {
+    const res = await axios.patch(
+      `${apiBase}/renewals/${ev.RenewalID}/status`,
+      { RenewalStatus: "Completed" },
+      getTokenConfig()
+    );
+    if (res?.data?.success) {
+      showNotification("success", res?.data?.message || "Renewal approved");
+      getHistory();
+    } else {
+      showNotification("error", res?.data?.message || "Failed to approve renewal");
+    }
+  } catch (error) {
+    showNotification(
+      "error",
+      error?.response?.data?.message || "Failed to approve renewal"
+    );
+  }
 };
 
 const isLoading = ref(false);
