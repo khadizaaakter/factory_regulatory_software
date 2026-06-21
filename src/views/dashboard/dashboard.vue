@@ -6,7 +6,7 @@
       <!-- Status cards -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
         <div
-          v-for="card in statusCards"
+          v-for="card in getStatusCards()"
           :key="card.key"
           class="bg-white rounded-xl border-2 shadow-sm p-5 flex items-center justify-between cursor-pointer transition-all"
           :class="[
@@ -37,10 +37,10 @@
           <h2 class="font-semibold text-gray-700">
             <span
               class="inline-block w-2.5 h-2.5 rounded-full mr-2"
-              :class="activeCard?.dotColor"
+              :class="getActiveCard()?.dotColor"
             ></span>
-            {{ activeCard?.label }} Licenses
-            <span class="ml-2 text-gray-400 font-normal text-sm">({{ filteredLicenses.length }})</span>
+            {{ getActiveCard()?.label }} Licenses
+            <span class="ml-2 text-gray-400 font-normal text-sm">({{ getFilteredLicenses().length }})</span>
           </h2>
           <a-button size="small" @click="activeFilter = null">✕ Close</a-button>
         </div>
@@ -58,13 +58,13 @@
               </tr>
             </thead>
             <tbody class="text-gray-700">
-              <tr v-if="filteredLicenses.length === 0">
+              <tr v-if="getFilteredLicenses().length === 0">
                 <td colspan="6" class="py-10 text-center">
                   <a-empty description="No licenses found" />
                 </td>
               </tr>
               <tr
-                v-for="(license, index) in filteredLicenses"
+                v-for="(license, index) in getFilteredLicenses()"
                 :key="license.LicenseID ?? index"
                 class="border-b border-gray-50 hover:bg-gray-50 transition-colors"
               >
@@ -87,7 +87,7 @@
                     class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium"
                     :class="badgeClass(license)"
                   >
-                    {{ activeCard?.label }}
+                    {{ getActiveCard()?.label }}
                   </span>
                 </td>
               </tr>
@@ -100,7 +100,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
 import MainLayout from "@/components/layout/MainLayout.vue";
 import { apiBase } from "@/config";
@@ -150,15 +150,15 @@ const classifyLicense = (license) => {
 };
 
 // ── Counts ────────────────────────────────────────────────────────────────────
-const expiredLicenses      = computed(() => licenseList.value.filter((l) => classifyLicense(l) === "expired"));
-const expiringSoonLicenses = computed(() => licenseList.value.filter((l) => classifyLicense(l) === "expiring_soon"));
-const safeLicenses         = computed(() => licenseList.value.filter((l) => classifyLicense(l) === "safe"));
+const getExpiredLicenses      = () => licenseList.value.filter((l) => classifyLicense(l) === "expired");
+const getExpiringSoonLicenses = () => licenseList.value.filter((l) => classifyLicense(l) === "expiring_soon");
+const getSafeLicenses         = () => licenseList.value.filter((l) => classifyLicense(l) === "safe");
 
-const statusCards = computed(() => [
+const getStatusCards = () => [
   {
     key: "expired",
     label: "Expired",
-    count: expiredLicenses.value.length,
+    count: getExpiredLicenses().length,
     icon: CloseCircleOutlined,
     iconBg: "bg-red-100",
     iconColor: "text-red-600",
@@ -171,7 +171,7 @@ const statusCards = computed(() => [
   {
     key: "expiring_soon",
     label: "Expiring Soon",
-    count: expiringSoonLicenses.value.length,
+    count: getExpiringSoonLicenses().length,
     icon: WarningOutlined,
     iconBg: "bg-yellow-100",
     iconColor: "text-yellow-600",
@@ -184,7 +184,7 @@ const statusCards = computed(() => [
   {
     key: "safe",
     label: "Safe",
-    count: safeLicenses.value.length,
+    count: getSafeLicenses().length,
     icon: CheckCircleOutlined,
     iconBg: "bg-green-100",
     iconColor: "text-green-600",
@@ -194,17 +194,17 @@ const statusCards = computed(() => [
     dotColor: "bg-green-500",
     badgeCls: "bg-green-50 text-green-700",
   },
-]);
+];
 
-const activeCard = computed(() => statusCards.value.find((c) => c.key === activeFilter.value));
+const getActiveCard = () => getStatusCards().find((c) => c.key === activeFilter.value);
 
-const filteredLicenses = computed(() => {
+const getFilteredLicenses = () => {
   if (!activeFilter.value) return [];
-  if (activeFilter.value === "expired")      return expiredLicenses.value;
-  if (activeFilter.value === "expiring_soon") return expiringSoonLicenses.value;
-  if (activeFilter.value === "safe")         return safeLicenses.value;
+  if (activeFilter.value === "expired")       return getExpiredLicenses();
+  if (activeFilter.value === "expiring_soon") return getExpiringSoonLicenses();
+  if (activeFilter.value === "safe")          return getSafeLicenses();
   return [];
-});
+};
 
 const toggleFilter = (key) => {
   activeFilter.value = activeFilter.value === key ? null : key;
@@ -226,7 +226,7 @@ const formatDate = (value) => {
   return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 };
 
-const badgeClass = (license) => activeCard.value?.badgeCls ?? "";
+const badgeClass = (license) => getActiveCard()?.badgeCls ?? "";
 
 // ── API ───────────────────────────────────────────────────────────────────────
 const getLicenses = async () => {
