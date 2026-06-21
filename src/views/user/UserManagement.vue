@@ -7,7 +7,7 @@
       </div>
 
       <!-- Stat cards -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-2">
+      <!-- <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-2">
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Total</p>
           <p class="text-3xl font-bold text-[#0b1b33] mt-2 mb-2">
@@ -26,7 +26,7 @@
             {{ stat.count }}
           </p>
         </div>
-      </div>
+      </div> -->
 
       <!-- Main card -->
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm">

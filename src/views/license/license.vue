@@ -45,7 +45,7 @@
                 <th class="py-3 px-5">Renew Date</th>
                 <th class="py-3 px-5">Expiry Date</th>
                 <th class="py-3 px-5">Reminder</th>
-                <th v-if="canRenewPerm" class="py-3 px-5">Renewal</th>
+                <th class="py-3 px-5">Renewal</th>
                 <th class="py-3 px-5">Actions</th>
                 <!-- <th class="py-3 px-5">Status</th> -->
               </tr>
@@ -107,7 +107,7 @@
                   <span v-else>-</span>
                 </td>
                 <!-- Renewal -->
-                <td v-if="canRenewPerm" class="py-3 px-5">
+                <td class="py-3 px-5">
                   <div class="flex items-center gap-2">
                     <a-button
                       size="small"
@@ -265,15 +265,44 @@ const viewLicense = (license) => {
 };
 
 // Renew is allowed only from the expiry date onward (today >= ExpiryDate).
+// const canRenew = (license) => {
+//   const expiry = license?.ExpiryDate;
+//   if (!expiry) return false;
+//   const exp = new Date(expiry);
+//   if (Number.isNaN(exp.getTime())) return false;
+//   const today = new Date();
+//   exp.setHours(0, 0, 0, 0);
+//   today.setHours(0, 0, 0, 0);
+//   return today >= exp;
+// };
+
+const reminderDayToDate = (expDate, days) => {
+  const d = new Date(expDate);
+  d.setDate(d.getDate() - days);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
 const canRenew = (license) => {
   const expiry = license?.ExpiryDate;
   if (!expiry) return false;
   const exp = new Date(expiry);
   if (Number.isNaN(exp.getTime())) return false;
+
+  const rd = (Array.isArray(license?.ReminderDays) ? license.ReminderDays : [])
+    .map(Number)
+    .filter((n) => !Number.isNaN(n));
+  if (!rd.length) return false;
+
   const today = new Date();
-  exp.setHours(0, 0, 0, 0);
   today.setHours(0, 0, 0, 0);
-  return today >= exp;
+
+  // rd[0]=red (Expired), rd[1]=yellow (Expiring Soon) — sent in that order from the form.
+  // Enable renew from the yellow date onward; fall back to red if only one date is set.
+  const thresholdDays = rd[1] ?? rd[0];
+  const thresholdDate = reminderDayToDate(exp, thresholdDays);
+
+  return today >= thresholdDate;
 };
 
 const renewLicense = (license) => {
@@ -319,39 +348,33 @@ const formatDate = (value) => {
   });
 };
 
-// Reminder based on days left until expiry (ExpiryDate - today), using the
-// record's ReminderDays tiers (default [30, 15, 7], sorted -> [7, 15, 30]):
-//   <= 7 (or already past) -> red    "Expired"
-//   8-15                   -> yellow "Expiring Soon"
-//   16+                    -> green  "Safe"
 const reminderBadge = (license) => {
   const expiry = license?.ExpiryDate;
   if (!expiry) return null;
   const exp = new Date(expiry);
   if (Number.isNaN(exp.getTime())) return null;
 
-  const today = new Date();
-  exp.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-  const days = Math.round((exp - today) / 86400000);
-
-  // thresholds from the record (fallback 30/15/7), sorted ascending -> [7, 15, 30]
-  const tiers = (Array.isArray(license?.ReminderDays)
-    ? license.ReminderDays
-    : [30, 15, 7]
-  )
+  // ReminderDays stored in form order: [red_days, yellow_days, green_days]
+  // where each is (ExpiryDate - reminderDate) in days.
+  // Convert back to actual dates and compare with today.
+  const rd = (Array.isArray(license?.ReminderDays) ? license.ReminderDays : [])
     .map(Number)
-    .filter((n) => !Number.isNaN(n))
-    .sort((a, b) => a - b);
-  const expiredMax = tiers[0] ?? 7;
-  const soonMax = tiers[1] ?? 15;
+    .filter((n) => !Number.isNaN(n));
+  if (!rd.length) return null;
 
-  if (days <= expiredMax) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // rd[0]=red (Expired date), rd[1]=yellow (Expiring Soon date), rd[2]=green (Safe notification date)
+  const redDate = rd[0] != null ? reminderDayToDate(exp, rd[0]) : null;
+  const yellowDate = rd[1] != null ? reminderDayToDate(exp, rd[1]) : null;
+
+  if (redDate && today >= redDate)
     return { text: "Expired", cls: "bg-red-50 text-red-700" };
-  }
-  if (days <= soonMax) {
+  if (yellowDate && today >= yellowDate)
     return { text: "Expiring Soon", cls: "bg-yellow-50 text-yellow-700" };
-  }
+  // "Safe" is the default state — show whenever ReminderDays are set and not in critical state.
+  // The green date controls notifications, not the badge visibility.
   return { text: "Safe", cls: "bg-green-50 text-green-700" };
 };
 

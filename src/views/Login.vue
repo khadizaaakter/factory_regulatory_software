@@ -9,9 +9,6 @@
           alt="Login Illustration"
           class="brand-illustration"
         />
-        <!-- <div class="brand-caption">
-          <h3>Factory Regulatory Software</h3>
-        </div> -->
       </div>
 
       <!-- Right side (Login form section) -->
