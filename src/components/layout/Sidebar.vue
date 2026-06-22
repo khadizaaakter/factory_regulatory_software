@@ -10,20 +10,15 @@
       <!-- ============ Header / Brand ============ -->
       <div class="sidebar-header" :class="{ 'is-collapsed': collapsed }">
         <div class="brand">
-          <div
-            class="brand-icon"
-            title="Toggle sidebar"
-            @click="collapsed = !collapsed"
-          >
+          <div class="brand-icon" title="Toggle sidebar" @click="collapsed = !collapsed">
             <SafetyCertificateOutlined />
           </div>
-          <span class="brand-name">Factory Regulatory Software</span>
+          <span class="brand-name"
+            >Factory Regulatory <span style="display: block">Software</span></span
+          >
         </div>
         <button class="collapse-btn" @click="collapsed = !collapsed">
-          <LeftOutlined
-            class="chevron"
-            :class="{ 'chevron--flipped': collapsed }"
-          />
+          <LeftOutlined class="chevron" :class="{ 'chevron--flipped': collapsed }" />
         </button>
       </div>
 
@@ -41,11 +36,7 @@
             <span class="user-role">{{ userRole }}</span>
           </div>
         </div>
-        <button
-          class="logout-btn"
-          title="Logout"
-          @click="handleLogout($router)"
-        >
+        <button class="logout-btn" title="Logout" @click="handleLogout($router)">
           <LogoutOutlined />
         </button>
       </div>
@@ -213,8 +204,7 @@ watch(
   cursor: pointer;
   flex-shrink: 0;
   overflow: hidden;
-  transition: background 0.2s ease, color 0.2s ease, width 0.25s ease,
-    opacity 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, width 0.25s ease, opacity 0.2s ease;
 }
 
 .collapse-btn:hover {
@@ -328,8 +318,7 @@ watch(
   font-size: 16px;
   flex-shrink: 0;
   overflow: hidden;
-  transition: background 0.2s ease, color 0.2s ease, width 0.25s ease,
-    opacity 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, width 0.25s ease, opacity 0.2s ease;
 }
 
 .logout-btn:hover {
