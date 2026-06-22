@@ -81,17 +81,17 @@
                 <tr
                   class="text-gray-500 font-semibold border-b border-gray-100 text-left"
                 >
-                  <th class="py-3 px-5">Type</th>
-                  <th class="py-3 px-5">Status</th>
                   <th class="py-3 px-5">Previous Expiry</th>
                   <th class="py-3 px-5">New Expiry</th>
                   <th class="py-3 px-5">Next Renew</th>
                   <th class="py-3 px-5">Application Date</th>
                   <th class="py-3 px-5">Received Date</th>
                   <th class="py-3 px-5">Total Fees</th>
+                  <th class="py-3 px-5">Type</th>
+                  <th class="py-3 px-5">Status</th>
                   <th class="py-3 px-5">Created</th>
                   <th v-if="canApprove" class="py-3 px-5">Approval</th>
-                  <th class="py-3 px-5 text-right">Details</th>
+                  <th class="py-3 px-5">Details</th>
                 </tr>
               </thead>
               <tbody class="text-gray-700">
@@ -100,6 +100,16 @@
                   :key="ev.RenewalID"
                   class="border-b border-gray-50 hover:bg-gray-50 transition-colors"
                 >
+                  <td class="py-3 px-5">{{ formatDate(ev.PreviousExpiryDate) }}</td>
+                  <td class="py-3 px-5">{{ formatDate(ev.NewExpiryDate) }}</td>
+                  <td class="py-3 px-5">{{ formatDate(ev.NextRenewDate) }}</td>
+                  <td class="py-3 px-5">{{ formatDate(ev.RenewalApplicationDate) }}</td>
+                  <td class="py-3 px-5">
+                    {{ formatDate(ev.RenewalLicenseReceivedDate) }}
+                  </td>
+                  <td class="py-3 px-5 font-medium text-gray-800 text-right">
+                    {{ ev.TotalFees ?? "-" }}
+                  </td>
                   <td class="py-3 px-5">
                     <span
                       class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium"
@@ -112,6 +122,7 @@
                       {{ ev.RenewalType || "-" }}
                     </span>
                   </td>
+
                   <td class="py-3 px-5">
                     <span
                       class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium"
@@ -123,16 +134,6 @@
                     >
                       {{ ev.RenewalStatus || "-" }}
                     </span>
-                  </td>
-                  <td class="py-3 px-5">{{ formatDate(ev.PreviousExpiryDate) }}</td>
-                  <td class="py-3 px-5">{{ formatDate(ev.NewExpiryDate) }}</td>
-                  <td class="py-3 px-5">{{ formatDate(ev.NextRenewDate) }}</td>
-                  <td class="py-3 px-5">{{ formatDate(ev.RenewalApplicationDate) }}</td>
-                  <td class="py-3 px-5">
-                    {{ formatDate(ev.RenewalLicenseReceivedDate) }}
-                  </td>
-                  <td class="py-3 px-5 font-medium text-gray-800">
-                    {{ ev.TotalFees ?? "-" }}
                   </td>
                   <td class="py-3 px-5">{{ formatDate(ev.CreatedAt) }}</td>
                   <td v-if="canApprove" class="py-3 px-5">
@@ -148,7 +149,7 @@
                       Approve
                     </a-button>
                   </td>
-                  <td class="py-3 px-5 text-right">
+                  <td class="py-3 px-5">
                     <a-button
                       size="small"
                       class="inline-flex items-center gap-1 bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
