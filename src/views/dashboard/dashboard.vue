@@ -64,7 +64,7 @@
                 </td>
               </tr>
               <tr
-                v-for="(license, index) in getFilteredLicenses()"
+                v-for="(license, index) in getPagedLicenses()"
                 :key="license.LicenseID ?? index"
                 class="border-b border-gray-50 hover:bg-gray-50 transition-colors"
               >
@@ -94,6 +94,16 @@
             </tbody>
           </table>
         </div>
+
+        <div v-if="getFilteredLicenses().length > pageSize" class="flex justify-end px-5 py-4 border-t border-gray-100">
+          <a-pagination
+            v-model:current="currentPage"
+            :total="getFilteredLicenses().length"
+            :page-size="pageSize"
+            show-quick-jumper
+            :show-total="(total) => `Total ${total} licenses`"
+          />
+        </div>
       </div>
     </div>
   </MainLayout>
@@ -114,6 +124,8 @@ import {
 const isLoading = ref(false);
 const licenseList = ref([]);
 const activeFilter = ref(null);
+const currentPage = ref(1);
+const pageSize = 10;
 
 // ── License classification ────────────────────────────────────────────────────
 // Mirrors the same logic used in license.vue:
@@ -208,6 +220,13 @@ const getFilteredLicenses = () => {
 
 const toggleFilter = (key) => {
   activeFilter.value = activeFilter.value === key ? null : key;
+  currentPage.value = 1;
+};
+
+const getPagedLicenses = () => {
+  const all = getFilteredLicenses();
+  const start = (currentPage.value - 1) * pageSize;
+  return all.slice(start, start + pageSize);
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
